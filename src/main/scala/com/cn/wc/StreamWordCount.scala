@@ -9,7 +9,7 @@ object StreamWordCount {
 
     //创建流处理执行环境
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(8)
+//    env.setParallelism(8)
 
 
     //从外部命令中提取参数，作为socket主机名和端口号
@@ -27,9 +27,9 @@ object StreamWordCount {
     val resultDataStream: DataStream[(String,Int)] = inputDataStream
       .flatMap(_.split(" "))
       .filter(_.nonEmpty)
-      .map((_,1)).setParallelism(3)
+      .map((_,1))//.setParallelism(3)
       .keyBy(0)
-      .sum(1).setParallelism(2)
+      .sum(1)//.setParallelism(2)
 
     resultDataStream.print().setParallelism(1)
 
