@@ -1,4 +1,4 @@
-package com.cn.wc.com.cn.apitest
+package com.cn.apitest
 
 import java.util.Properties
 
