@@ -26,8 +26,8 @@ object StreamWordCount {
     //进行转换处理统计
     val resultDataStream: DataStream[(String,Int)] = inputDataStream
       .flatMap(_.split(" "))
-      .filter(_.nonEmpty)
-      .map((_,1))//.setParallelism(3)
+      .filter(_.nonEmpty)//.disableChaining()  将任务链前后都拆开，不参与任务链的合并（1分3）
+      .map((_,1))//.startNewChain() 开启一个新的任务链 （一分为二）  //.setParallelism(3)
       .keyBy(0)
       .sum(1)//.setParallelism(2)
 
