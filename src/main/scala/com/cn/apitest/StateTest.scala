@@ -5,15 +5,36 @@ import org.apache.flink.api.common.state.{ListState, ListStateDescriptor, MapSta
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.flink.util.Collector
-
 import java.util
+import java.util.concurrent.TimeUnit
+
+import org.apache.flink.api.common.restartstrategy.RestartStrategies
+import org.apache.flink.api.common.time.Time
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.runtime.state.memory.MemoryStateBackend
+import org.apache.flink.streaming.api.CheckpointingMode
 
 
 object StateTest {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
+//    env.setStateBackend( new MemoryStateBackend() )
+    env.setStateBackend( new FsStateBackend("") )
+//    env.setStateBackend( new RocksDBStateBackend("url")() )
 
+    env.enableCheckpointing(1000L)
+    env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.AT_LEAST_ONCE)
+    env.getCheckpointConfig.setCheckpointTimeout(60000L)
+    env.getCheckpointConfig.setMaxConcurrentCheckpoints(2)  // 最多允许并行执行的checkpoints数，默认1个
+    env.getCheckpointConfig.setMinPauseBetweenCheckpoints(500) // 两个checkpoint之间的间隔时间至少500毫秒，配了这个上面那个默认就是1了
+    env.getCheckpointConfig.setPreferCheckpointForRecovery(true)  // 默认false 是否优先使用checkpoint
+    env.getCheckpointConfig.setTolerableCheckpointFailureNumber(3)  // 容忍checkpoint失败次数
+
+    // 重启策略
+    env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 60000L))
+    env.setRestartStrategy(RestartStrategies.failureRateRestart(5, Time.of(5, TimeUnit.MINUTES), Time.of(10,TimeUnit.SECONDS)))
 
     // 读取数据
     //    val inputPath = "D:\\FlinkLearn\\src\\main\\resources\\sensor.txt"
@@ -26,7 +47,7 @@ object StateTest {
       .map( data => {
         val  arr  = data.split(",")
         SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
-      })
+      }).uid("1")
 
     // 需求：对于温度传感器温度值跳变，超过10度，报警
     val alertStream = dataStream

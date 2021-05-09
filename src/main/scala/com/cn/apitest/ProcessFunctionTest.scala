@@ -54,10 +54,14 @@ class TempIncreWarning(interval: Long) extends KeyedProcessFunction[String, Sens
     val lastTemp = lastTempState.value()
     val timerTs = timerTsState.value()
 
+    // 更新温度值
+    lastTempState.update(value.temperature)
+
     // 当前温度值和上次温度进行比较
     if( value.temperature > lastTemp && timerTs == 0){
       // 如果温度上升，且没有定时器，那么注册当前时间10s之后的定时器
       val ts = ctx.timerService().currentProcessingTime() + interval
+      ctx.timerService().registerProcessingTimeTimer(ts)
       timerTsState.update(ts)
     } else if ( value.temperature < lastTemp ){
       // 如果温度下降，那么删除定时器
@@ -74,6 +78,14 @@ class TempIncreWarning(interval: Long) extends KeyedProcessFunction[String, Sens
   }
 
 }
+
+
+
+
+
+
+
+
 
 // KeyedProcessFunction功能测试
 class  MyKeyedProcessFunction extends KeyedProcessFunction[String, SensorReading, String]{
