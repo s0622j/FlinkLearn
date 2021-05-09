@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
 
-object ProcessFunction {
+object ProcessFunctionTest {
 
   def main(args: Array[String]): Unit = {
 
