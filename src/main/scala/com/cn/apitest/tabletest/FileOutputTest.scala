@@ -53,7 +53,7 @@ object FileOutputTest {
       .createTemporaryTable("outputTable")
 
     resultTable.insertInto("outputTable")
-//    aggTable.insertInto("outputTable")  // 文件系统不支持
+//    aggTable.insertInto("outputTable")  // 文件系统不支持 测试
 
 //    resultTable.toAppendStream[(String, Double)].print("result")
 //    aggTable.toRetractStream[(String, Long)].print("agg")
