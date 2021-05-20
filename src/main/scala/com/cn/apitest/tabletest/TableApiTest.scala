@@ -60,7 +60,7 @@ object TableApiTest {
 //    val inputTable: Table = tableEnv.from("inputTable")
 //    inputTable.toAppendStream[(String, Long, Double)].print()
 
-    // 2.1 从kafka读取数据
+    // 2.2 从kafka读取数据
     tableEnv.connect( new Kafka()
         .version("0.11")
         .topic("sensor")
