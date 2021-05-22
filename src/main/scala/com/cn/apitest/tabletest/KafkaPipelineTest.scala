@@ -14,6 +14,16 @@ object KafkaPipelineTest {
     val tableEnv = StreamTableEnvironment.create(env)
 
     // 2 从kafka读取数据
+    /**
+      * 启动kafka控制台生产者
+      * /soft/kafka/bin/kafka-server-start.sh -daemon /soft/kafka/config/server.properties
+      * [root@data101 /root]#cd /soft/kafka
+      * ./bin/kafka-console-producer.sh --broker-list data101:9092 --topic sensor
+      *
+      * * 启动一个kafka消费者看是否写入
+      * * cd /soft/kafka
+      * * ./bin/kafka-console-consumer.sh --bootstrap-server data101:9092 --topic sinktest --zookeeper master100:2181
+      */
     tableEnv.connect( new Kafka()
       .version("0.11")
       .topic("sensor")

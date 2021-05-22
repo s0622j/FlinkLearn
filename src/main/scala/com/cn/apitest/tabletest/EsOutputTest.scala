@@ -3,10 +3,11 @@ package com.cn.apitest.tabletest
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api.DataTypes
 import org.apache.flink.table.api.scala._
-import org.apache.flink.table.descriptors.{Csv, FileSystem, Schema}
+import org.apache.flink.table.descriptors._
 
-object FileOutputTest {
+object EsOutputTest {
   def main(args: Array[String]): Unit = {
+
     // 1.创建环境
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
@@ -23,7 +24,6 @@ object FileOutputTest {
         .field("id", DataTypes.STRING())
         .field("timestamp", DataTypes.BIGINT())
         .field("temp", DataTypes.DOUBLE())
-//          .field("pt", DataTypes.TIMESTAMP(3)).proctime()
       )
       .createTemporaryTable("inputTable")
 
@@ -39,27 +39,24 @@ object FileOutputTest {
       .groupBy('id)  // 基于id分组
       .select('id, 'id.count as 'count)
 
-
-    // 4. 输出到文件
-    // 注册输出表
-    val outputPath = "D:\\FlinkLearn\\src\\main\\resources\\outputsensor.txt"
-    tableEnv.connect( new FileSystem().path(outputPath) )
-      //      .withFormat( new OldCsv() )
-      .withFormat( new Csv() )
-      .withSchema( new Schema()
-        .field("id", DataTypes.STRING())
-//        .field("cnt", DataTypes.BIGINT())
-        .field("temp2333", DataTypes.DOUBLE())
+    // 4.输出到ES
+    tableEnv.connect(new Elasticsearch()
+        .version("6")
+        .host("localhost", 9200, "http")
+        .index("sensor")
+        .documentType("temperature")
+    )
+      .inUpsertMode()
+      .withFormat(new Json())
+      .withSchema(new Schema()
+          .field("id", DataTypes.STRING())
+          .field("count", DataTypes.BIGINT())
       )
-      .createTemporaryTable("outputTable")
+      .createTemporaryTable("esOutputTable")
 
-    resultTable.insertInto("outputTable")
-//    aggTable.insertInto("outputTable")  // 文件系统不支持 测试
+    aggTable.insertInto("esOutputTable")
 
-//    resultTable.toAppendStream[(String, Double)].print("result")
-//    aggTable.toRetractStream[(String, Long)].print("agg")
-
-    env.execute("FileOutputTest")
+    env.execute("es_output_test")
 
   }
 
