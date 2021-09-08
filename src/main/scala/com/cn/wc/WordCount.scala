@@ -10,7 +10,9 @@ object WordCount {
     val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
 
     //从文件中读取数据
-    val inputPath: String = "D:\\FlinkLearn\\src\\main\\resources\\hello.txt"
+    var inputPath = ClassLoader.getSystemClassLoader.getResource("hello.txt").toString
+
+//    val inputPath: String = "D:\\FlinkLearn\\src\\main\\resources\\hello.txt"
     val inputDataSet: DataSet[String] = env.readTextFile(inputPath)
 
     //对数据进行转换处理统计，先分词，再按照word进行分组，最后进行聚合统计
